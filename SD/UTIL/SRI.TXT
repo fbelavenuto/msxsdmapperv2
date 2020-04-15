@@ -1,0 +1,135 @@
+              *************************************
+              *            SofaRunIt v1.6         *
+              * (c) 2017 by NearDark and Louthrax *
+              *************************************
+
+
+===================================================================
+                           Introduction
+===================================================================
+
+SofaRunIt is a MSX tool designed  to launch MSX disk images. It  is
+based on NearDark "RunIt" tool, with many changes and improvements.
+
+It features:
+
+ * Support for file-based disk images (MSX-DOS and BASIC).
+
+ * Support of both concatenated and individual disk images.
+
+ * Support for mixed 360KB & 720KB concatenated disk images.
+
+ * Keyboard or joystick on the fly disk change.
+
+ * On the fly write protection change.
+
+ * On the fly user disk creation.
+
+ * Up to 20 disk images at the same time.
+
+ * Support  for games  using memory  mapper, even  if your MSX does
+   not have memory mapper read-back capabilities.
+
+
+
+===================================================================
+                              License
+===================================================================
+
+You are allowed  to freely  use  and distribute SofaRunIt  for  any
+non-commercial usage.
+
+This software is provided  'as-is', without any express  or implied
+warranty.  In no  event will  the author  be held  liable for  any
+damages arising from the use of this software.
+
+
+
+===================================================================
+                           Requirements
+===================================================================
+
+MSX computer with MSX-DOS 2,  and 49152 RAM bytes free on the  main
+slot. Type   "memory" on  the MSX-DOS  2 command  line to check how
+much free RAM you have.
+
+Games  using  memory  mapper (like  the  translated  version of  SD
+Snatcher or the cracked Konami Game Collections) will require  more
+memory.
+
+
+
+===================================================================
+                             Usage
+===================================================================
+
+Usage: SRI [options] <disk_image> ...
+
+[options] can be one or more of:
+  /Bx: Boot from disk x (1 = first)
+  /C:  Simulate [CTRL] pressed (only one drive & more memory)
+  /Dx: Delay disk operations (0..255)
+  /F:  No memory mapper support
+       (faster disk operations)
+  /H:  Display this help
+  /M:  Use Music Module as MSX Audio
+  /N:  No screen change (keep palette)
+  /R:  Make next images read-only
+  /S:  Skip logo
+  /W:  Make next images writable
+  /Zx: Set CPU mode (turboR only)
+    0: No change (default)
+    1: Z80 (ROM)
+    2: R800 ROM
+    3: R800 DRAM
+
+<disk_image> is a  disk image(s) file.  A <disk_image> can  contain
+several concatenated disk images.
+
+If preceded  by '+',  <disk_image> will  be created  on the  fly on
+first  access,  as formatted  empty  720KB MSX-DOS  disk.  Only one
+'+'<disk_image> is allowed.
+
+Several <disk_image> can be specified, they will be added in order.
+
+Following operations are available on disk access (CAPS led on):
+
+Keyboard:
+
+  [1]-[9]:          Select disk 1-9
+  [0]:              Select disk 10
+  [Shift]+[1]-[9]:  Select disk 11-19
+  [Shift]+[0]:      Select disk 20
+  [R]:              Make current disk read-only
+  [W]:              Make current disk writable
+ 
+Joystick disk selection:
+
+  1. Keep (A) or (B) button pressed
+  2. Press other button x times to select disk x (CAPS will blink)
+  3. Release both buttons
+
+
+
+===================================================================
+                          Troubleshooting
+===================================================================
+
+Most issues are cause by either:
+
+ * Not enough memory available. Try the /C option.
+ 
+ * Too  fast disk  accesses. This  can cause  graphical glitches or
+   even  game  crash. Try  the  /D option  to  slow down  the  disk
+   accesses. Increase the value until game works.
+   
+ * Disk is  write protected.  Some games  require the  disk to   be
+   write-enabled. Add the /W parameter before <disk_image>.
+
+Even if everything has been  done for it, SofaRunIt can't  run 100%
+of the games, because it's loaded  in RAM mapper and not in a  real
+ROM slot. If the above solutions do  not work,  your problem  might
+be caused  by  games  accessing directly  the  disk  ROM instead of
+using  hooks, or  because of   your  memory  configuration    (most
+of  the  times when you have multiple RAM slots). Those  issues are
+usually  easy to patch.

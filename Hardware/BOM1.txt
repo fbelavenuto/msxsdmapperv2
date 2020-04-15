@@ -1,0 +1,34 @@
+Part Value           Device               Package     Description
+C1   100u            CPOL-EUE3,5-6        E3,5-6      POLARIZED CAPACITOR, European symbol
+C2   100u            CPOL-EUC             PANASONIC_C POLARIZED CAPACITOR, European symbol
+C3   100n            C-EUC0805            C0805       CAPACITOR, European symbol
+C4   100n            C-EUC0805            C0805       CAPACITOR, European symbol
+C5   100n            C-EUC0805            C0805       CAPACITOR, European symbol
+C6   100n            C-EUC0805            C0805       CAPACITOR, European symbol
+C7   100n            C-EUC0805            C0805       CAPACITOR, European symbol
+C8   100n            C-EUC1206            C0805       CAPACITOR, European symbol
+C9   100n            C-EUC1206            C0805       CAPACITOR, European symbol
+C10  100n            C-EUC0805            C0805       CAPACITOR, European symbol
+D1   Cart1           LED3MM               LED3MM      LED
+D2   Cart2           LED3MM               LED3MM      LED
+IC1  SST39VF020N     SST39VF020N          PLCC32R     2 Mbit x8 Multi-Purpose Flash
+IC2  HM628512ASOP32  HM628512ASOP32       SOP32       4M SRAM 512kword x 8bit
+IC3  XC95144XL_TQ100 XC95144XL_TQ100      XC-TQ100    xc95144xl_tq100 edit this description
+IC4  LM1117-3V3      V_REG_LM1117SOT223   SOT223      Voltage Regulator LM1117
+IC5  LM1117-3V3      V_REG_LM1117SOT223   SOT223      Voltage Regulator LM1117
+R1   4K7             R-EU_R0805           R0805       RESISTOR, European symbol
+R2   4K7             R-EU_R0805           R0805       RESISTOR, European symbol
+R3   330             R-EU_R0805           R0805       RESISTOR, European symbol
+R4   4K7             R-EU_R0805           R0805       RESISTOR, European symbol
+R5   4K7             R-EU_R0805           R0805       RESISTOR, European symbol
+R6   4K7             R-EU_R0805           R0805       RESISTOR, European symbol
+R7   4K7             R-EU_R0805           R0805       RESISTOR, European symbol
+R8   4K7             R-EU_R0805           R0805       RESISTOR, European symbol
+R9   4K7             R-EU_R0805           R0805       RESISTOR, European symbol
+S1   TL32YO          TL32YO               TL3XYO      TINY SWITCH ON - MOM
+S2   TL32YO          TL32YO               TL3XYO      TINY SWITCH ON - MOM
+SD1  SDMMC06132      SDMMC06132           06132       SD MMC Card holder
+SD2  SDMMC06132      SDMMC06132           06132       SD MMC Card holder
+T1   BC858           BC858A-PNP-SOT23-BEC SOT23-BEC   PNP Transistror
+T2   BC858           BC858A-PNP-SOT23-BEC SOT23-BEC   PNP Transistror
+X1   25MHz           SM77H                SM77H       3.3V CMOS Clock Oscillator

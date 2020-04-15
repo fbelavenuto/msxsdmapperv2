@@ -1,0 +1,31 @@
+Tirado porta I/O criada para atualização. Modificado forma de atualização para ASCII16 padrão.
+Frame 1 para leitura da Flash, Frame 2 para leitura e escrita somente se banco > 7.
+Adicionado detecção do disk change.
+Melhorado modo assíncrono da porta SPI.
+Registro para seleção dos bancos das páginas agora é decodificado completo, 6000h e 7000h.
+Janela SPI sempre ativa agora.
+Mudado registros:
+ - Para acesso aos dados do SPI a janela é 7B00h a 7EFFh.
+ - Para controle e status é 7F00h
+Mudado forma de seleção do cartão atual, bits 1 e 0 do registro 7F00h seleciona cartão:
+ - "00" não seleciona nenhum;
+ - "01" seleciona 1º cartão;
+ - "10" seleciona 2º cartão.
+Para ler status, depende do cartão selecionado, se nenhum lê status das chaves externas, se algum 
+ selecionado lê status do disk change, cartão inserido e proteção contra escrita.
+
+
+04/11/2014:
+  Atualizado versão no Nextor para 2.0.4
+
+06/07/2014:
+  Alterado lógica do CPLD para porta SPI trabalhar assincronicamente. Não
+é mais necessário depender do clock do barramento.
+
+15/01/2014:
+  Adicionado circuito da Megaram (by Ademir Carchano) e uma chave para poder
+selecionar se a interface irá implementar uma Mapper ou uma Megaram.
+  Layout da PCB desenhado pelo Luciano Sturaro.
+
+02/01/2014:
+  Primeira versão.

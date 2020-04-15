@@ -1,0 +1,408 @@
+              *************************************
+              *            SofaROM v2.0           *
+              *  coded by Louthrax in April 2017  *
+              *        A.I. code by NYYRIKKI      *
+              *************************************
+
+
+===================================================================
+                           Introduction
+===================================================================
+
+SofaROM  is an  MSX tool  designed to  launch MSX  ROM images.  It
+supports several "ROM devices" and most ROMs and MegaROMs  formats.
+ROMs can also be launched without any external device using "Memory
+mapper" or "turboR mapper".
+
+Depending on the options passed, ROMs are patched on the fly to use
+JoyMega, Game Master  1 or  2,  PSG to SCC,  external SCC (for  ROM
+devices  having no integrated SCC chip) or other features.
+
+SofaROM will pick  the best suitable  ROM device depending  on the
+ROM type and settings chosen. You can specify a "preferred  device"
+with the  /Dx option,  but if  this one  is not  found or suitable,
+another device might be selected instead.
+
+
+
+===================================================================
+                              License
+===================================================================
+
+You are allowed to freely  use and distribute SofaROM for  any non-
+commercial usage.
+
+This software is provided  'as-is', without any express  or implied
+warranty.  In no  event will  the author  be held  liable for  any
+damages arising from the use of this software.
+
+
+
+===================================================================
+                           Requirements
+===================================================================
+
+MSX computer  with MSX-DOS   2,  and  some extra   mapped-memory on
+the main slot if you want to use Game Masters or "Memory mapper" to
+launch ROMs.
+
+
+Supported ROM devices are:
+
+ * Memory mapper
+   - Game Master 1 support only for small ROMs (<=32KB).
+   - No Game Master 2 support.
+   - ROMs  will be  patched at  load time  by SofaROM  for all  ROM
+     types.
+   - Disk accesses during ROM execution.
+   - Fastest speed on turboR R800 mode.
+   - /T option required for SCC sounds.
+
+ * turboR mapper
+   - ROMs  will be  patched at  load time  by SofaROM  for all  ROM
+     types.
+   - No disk accesses during ROM execution but ROM size limited  to
+     1MB.
+   - Fastest speed on turboR R800 mode.
+   - /T option required for SCC sounds.
+
+ * SD Snatcher
+   - Same  as Snatcher  cartridge  but pages  are  offseted by  8.
+   - ROMs  will be  patched at  load time  by SofaROM  for all  ROM
+     types.
+   
+ * Snatcher
+   - Konami SCC+ cartridge.
+   - ROMs will be patched at load time by SofaROM for non-SCC ROMs.
+
+ * MegaRAM
+   - ROMs will be patched at load time by SofaROM for ASCII ROMs.
+   - /T option required for SCC sounds.
+
+ * ESE SCC
+   - ROMs will be patched at load time by SofaROM for non-SCC ROMs.
+
+ * MegaFlashROM SCC
+   - ROMs will be patched at load time by SofaROM for non-SCC ROMs.
+
+ * GR8NET
+   - Native support for all ROMs.
+   - No Game Master 1 support.
+   - No Game Master 2 support.
+
+ * MegaFlashROM SCC+ SD
+   - Native support  for all ROMs  except Linear0 and  LinearC (see
+     below).
+
+ * Multi-MSXRAM
+   - Native support for all ROMs.
+   - /T option required for SCC sounds.
+
+ * MegaFlashROM SCC+
+   - Native support for all ROMs.
+
+
+
+===================================================================
+                        Supported ROM types
+===================================================================
+
+Supported ROM types are:
+
+ * ASCII16
+   ASCII MegaROMs  with 16KB  pages and  standard switch  addresses
+   (6000 and 7000).
+
+ * ASCII16F8
+   ASCII  MegaROMs with  16KB pages  and "TAITO"  switch addresses
+   (67F8 and 77F8).
+
+ * ASCII8
+   ASCII  MegaROMs with  8KB pages  and standard  switch addresses
+   (6000, 6800, 7000 and 7800).
+ 
+ * ASCII8F8
+   ASCII  MegaROMs  with  8KB pages  and  "TAITO"  switch addresses
+   (67F8, 6FF8, 77F8 and 7FF88).
+
+ * Konami SCC
+   Konami  SCC  MegaROMs  (switch addresses  5000,  7000,  9000 and
+   B000).
+
+ * Konami
+   Konami MegaROMs (switch addresses 4000, 6000, 8000 and A000).
+
+ * ASCII16W
+   ASCII  MegaROMs  with  16KB pages  and  "wide"  switch addresses
+   (6000-67FF and 7000-77FF).
+
+ * ASCII8W
+   ASCII MegaROMs with 8KB pages and "wide" switch addresses (6000-
+   67FF 6800-6FFF 7000-77FF and 7800-7FFF).
+
+ * Linear
+   Linear ROM image  starting at 4000  or 8000 and  not overlapping
+   C000-FFFF.
+
+ * Linear0
+   Linear ROM image starting at 0000 and not overlapping C000-FFFF.
+
+ * LinearC
+   Any linear ROM image overlapping C000-FFFF.
+
+ * BASIC
+   BASIC ROM image (starting at 8000).
+
+
+
+===================================================================
+                     Non-volatile ROM devices
+===================================================================
+
+SofaROM  keeps track  of the  last flashed  ROMs for  each type  of
+device in a "SROM.FLH" file. If a device is considered non-volatile,
+SofaROM  reflashes  it  only when  needed  (different  ROM file  or
+different options).
+
+Non-volatile devices are:
+ * ESE SCC
+ * MegaFlashROM SCC
+ * MegaFlashROM SCC+ SD
+ * MegaFlashROM SCC+
+
+You  can  force  reflashing  by using  the  /E  option  or manually
+deleting the "SROM.FLH" file.
+
+
+
+===================================================================
+                      Artificial intelligence
+===================================================================
+
+When patching ROMs, SofaROM uses A.I. code (created by NYYRIKKI) to
+detect if  the area  to patch   is really  code, or  data (patching
+must be avoided in this case).
+
+You have  a limited  control on  this process  with the  /A option.
+Basically,  try  to  decrease  the  A.I.  level  if  you experiment
+crashes in  the game,  and increase  it if  you see data corruption
+after that (in graphics or musics).
+
+
+
+===================================================================
+                         Interruption mode
+===================================================================
+
+The /I option is only  used by "Memory mapper" and  "turboR mapper"
+devices. Those two devices are more prone to problems because  they
+require calls to time-consuming routines to swap ROM pages.
+
+Try to  play with  this option  to fix  problem when  using "Memory
+mapper" or  "turboR mapper" devices.
+
+Here's a list of recommended options for some games:
+
+ * DI/EI mode (/I1):
+   - Fairy Land Story
+   - Aleste
+   - Space Manbow
+   - Zanac-Ex
+
+ * DI mode (/I2):
+   - Dragon Quest 2
+   - Legendly Knight
+   - Xanadu
+   - Family Boxing
+   - Contra
+   - Ogre
+   - Outrun
+   - Rastan Saga
+
+
+
+===================================================================
+                             SROM.INI
+===================================================================
+
+You can define several settings in this file:
+
+ * Path to the SROM.FLH file.
+ * Path to the Game Master's ROMs.
+ * The JoyMega joystick to key bindings.
+ * The PSG2SCC waveforms.
+
+Have a look at the comments in the file for more details.
+
+
+
+===================================================================
+                             Usage
+===================================================================
+
+Usage: SROM [options] <rom_image>
+
+[options] can be one or more of:
+
+  /Ax: A.I. level (0-2)
+       Default is 2
+
+  /B:  Patch game to disable keyboard
+
+  /Cxyz: Patch ROM to filter PSG channels
+    x: PSG channel 1
+    y: PSG channel 2
+    z: PSG channel 3
+      0: No patch (default)
+      1: Noise only
+      2: Music only
+      3: Off
+
+  /Dx: Select preferred device
+    0: Memory mapper
+    1: turboR mapper
+    2: SD Snatcher
+    3: Snatcher
+    4: MegaRAM
+    5: ESE SCC
+    6: MegaFlashROM SCC
+    7: GR8NET
+    8: MegaFlashROM SCC+ SD
+    9: Multi-MSXRAM
+    10: MegaFlashROM SCC+
+
+  /E:  Enforce flashing (reset SROM.FLH)
+
+  /F:  Flash mode
+       - MFRSCC+ (SD) only -
+    0: Flash at 1x speed (default for MFRSCC+)
+    1: Flash at 4x speed (default for MFRSCC+SD)
+
+  /Gx: Set Game Master mode
+    0: Off (default)
+    1: Game Master 1
+    2: Game Master 2
+
+  /Ix: Change interruption mode
+       - Memory mapper and turboR mapper devices only -
+    0: None (default)
+    1: DI/EI
+    2: DI
+
+  /Jx: Patch ROM for JoyMega
+    0: No patch (default)
+    1: Generic (3Btns)
+    2: Generic (6Btns)
+    3: Autofire 1 (3Btns)
+    4: Autofire 2 (3Btns)
+    5: Autofire 3 (3Btns)
+    6: Xevious
+    7: Goonies (3Btns)
+    8: Parodius (3Btns)
+    9: M.O.G. (6Btns)
+    10: M.O.G. TTK (6Btns)
+    11: Bubble Bobble (3Btns)
+    12: Bubble Bobble TTK (6Btns)
+
+  /Lx: Patch ROM to use different language
+    0: No patch (default)
+    1: Japanese
+    2: International
+    3: Korean
+
+  /Mx: Patch ROM to use different MSX version
+    0: No patch (default)
+    1: MSX 1
+    2: MSX 2
+    3: MSX 2+
+    4: turboR
+
+  /N:  No subslots
+
+  /Ox: Page switch optimization (0-255)
+       - Memory mapper device only -
+       Default is 9
+
+  /Px: Patch ROM to use different PSG port
+    0: No patch (default)
+    1: MFRSCC+(SD) port
+    2: Muted
+
+  /Q: Quiet mode
+
+  /Rx: Set MegaROM mapper type
+    0: Automatic (default)
+    1: ASCII16
+    2: ASCII16F8
+    3: ASCII8
+    4: ASCII8F8
+    5: Konami SCC
+    6: Konami
+    7: ASCII16W
+    8: ASCII8W
+    9: Linear
+    10: Linear0
+    11: LinearC
+    12: BASIC
+
+  /Sxy: Set SCC slot
+    x: Main slot (0-3)
+    y: Subslot (0-3)
+
+  /T: Patch ROM to use external SCC
+
+  /Wxyz: Patch ROM to use SCC instead of PSG
+    x: PSG channel 1
+    y: PSG channel 2
+    z: PSG channel 3
+      0: No patch (default)
+      1: Sawtooth1
+      2: Sawtooth2
+      3: Square
+      4: Sine
+      5: Triangle
+      6: Noise
+      7: Silence
+
+  /Zx: Set CPU mode
+       - turboR only -
+    0: No change (default)
+    1: Z80 (ROM)
+    2: R800 ROM
+    3: R800 DRAM
+
+<rom_image> is a ROM image file
+
+
+
+===================================================================
+                              Thanks
+===================================================================
+
+Thanks are flying to (no special order):
+
+ * Bifi for ROMLOAD.
+   Official site: http://www.tni.nl/products/romload.html
+
+ * Adriano Camargo Rodrigues da Cunha for ExecROM.
+   Official site: http://sourceforge.net/projects/execrom/
+
+ * Trunks  & Victor  for LOADROM  and for  the help  on the  GR8Net
+   driver.
+
+ * Fabf  for providing  me a  test cartridge  for both  MegaRAM and
+   Multi-MSXRAM!
+ 
+ * Jipe for his advices on ASCII 16 ROMs.
+ 
+ * Hamlet for providing me a HBM-512 memory expansion cartridge.
+
+ * Trunks  & Victor  for LOADROM  and for  the help  on the  GR8Net
+   driver.
+
+ * Jipe for his advices on ASCII 16 ROMs.
+
+ * Tiny Yarou for the PSG to SCC idea and SG2MSX tool.
+
+ * Manuel  Pazos   for   the  MegaFlashROM   cartridges  and    his
+   technical help on it.
