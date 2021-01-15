@@ -37,7 +37,7 @@ OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
 
 program1 = FBL-UPD
 
-all: dir $(program1).COM
+all: $(ODIR) $(program1).COM
 
 $(program1).COM: $(program1).ihx
 
@@ -49,7 +49,7 @@ $(program1).ihx: $(OBJS)
 clean:
 	$(RM) $(ODIR)/* *.map *.lk *.noi *.com *.ihx
 
-dir:
+$(ODIR):
 	-$(MD) $(ODIR)
 
 $(ODIR)/%.rel: $(SDIR)/%.S

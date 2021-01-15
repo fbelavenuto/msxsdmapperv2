@@ -1,3 +1,5 @@
+
+01/01/2020:
 Tirado porta I/O criada para atualização. Modificado forma de atualização para ASCII16 padrão.
 Frame 1 para leitura da Flash, Frame 2 para leitura e escrita somente se banco > 7.
 Adicionado detecção do disk change.

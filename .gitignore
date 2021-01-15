@@ -50,3 +50,8 @@
 /CPLD/src/tb_spi2/vsim.wlf
 /CPLD/src/tb_spi2/work
 /SW/Updater/obj
+/Driver/SDXC.ROM
+/SW/Updater/FBL-UPD.zip
+/SW/Updater/Makefile-ant
+/SW/Updater/SDM-UPD.COM
+/SW/Updater/SDM-UPD.zip
