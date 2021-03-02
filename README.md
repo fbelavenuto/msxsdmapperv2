@@ -1,6 +1,6 @@
 # MSX SD Mapper V2
 
-## ATTENTION: do not try to update the old SDMapper (and its clones) using this firmware with the old SDMUPD.COM utility. SDMUPD.COM does not differentiate between new and old hardware and if the update occurs, the old SDMappers will brick !!
+## WARNING: do not try to update the old SDMapper V1 (and its clones) with this new ROM using the old SDMUPD.COM utility, as the hardware is different, and it will brick your cartridge.
 
 # readme in portuguese
 
