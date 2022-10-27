@@ -1,33 +1,33 @@
 
 01/01/2020:
-Tirado porta I/O criada para atualizaÁ„o. Modificado forma de atualizaÁ„o para ASCII16 padr„o.
+Tirado porta I/O criada para atualiza√ß√£o. Modificado forma de atualiza√ß√£o para ASCII16 padr√£o.
 Frame 1 para leitura da Flash, Frame 2 para leitura e escrita somente se banco > 7.
-Adicionado detecÁ„o do disk change.
-Melhorado modo assÌncrono da porta SPI.
-Registro para seleÁ„o dos bancos das p·ginas agora È decodificado completo, 6000h e 7000h.
+Adicionado detec√ß√£o do disk change.
+Melhorado modo ass√≠ncrono da porta SPI.
+Registro para sele√ß√£o dos bancos das p√°ginas agora √© decodificado completo, 6000h e 7000h.
 Janela SPI sempre ativa agora.
 Mudado registros:
- - Para acesso aos dados do SPI a janela È 7B00h a 7EFFh.
- - Para controle e status È 7F00h
-Mudado forma de seleÁ„o do cart„o atual, bits 1 e 0 do registro 7F00h seleciona cart„o:
- - "00" n„o seleciona nenhum;
- - "01" seleciona 1∫ cart„o;
- - "10" seleciona 2∫ cart„o.
-Para ler status, depende do cart„o selecionado, se nenhum lÍ status das chaves externas, se algum 
- selecionado lÍ status do disk change, cart„o inserido e proteÁ„o contra escrita.
+ - Para acesso aos dados do SPI a janela √© 7B00h a 7EFFh.
+ - Para controle e status √© 7F00h
+Mudado forma de sele√ß√£o do cart√£o atual, bits 1 e 0 do registro 7F00h seleciona cart√£o:
+ - "00" n√£o seleciona nenhum;
+ - "01" seleciona 1¬∫ cart√£o;
+ - "10" seleciona 2¬∫ cart√£o.
+Para ler status, depende do cart√£o selecionado, se nenhum l√™ status das chaves externas, se algum 
+ selecionado l√™ status do disk change, cart√£o inserido e prote√ß√£o contra escrita.
 
 
 04/11/2014:
-  Atualizado vers„o no Nextor para 2.0.4
+  Atualizado vers√£o no Nextor para 2.0.4
 
 06/07/2014:
-  Alterado lÛgica do CPLD para porta SPI trabalhar assincronicamente. N„o
-È mais necess·rio depender do clock do barramento.
+  Alterado l√≥gica do CPLD para porta SPI trabalhar assincronicamente. N√£o
+√© mais necess√°rio depender do clock do barramento.
 
 15/01/2014:
   Adicionado circuito da Megaram (by Ademir Carchano) e uma chave para poder
-selecionar se a interface ir· implementar uma Mapper ou uma Megaram.
+selecionar se a interface ir√° implementar uma Mapper ou uma Megaram.
   Layout da PCB desenhado pelo Luciano Sturaro.
 
 02/01/2014:
-  Primeira vers„o.
+  Primeira vers√£o.
