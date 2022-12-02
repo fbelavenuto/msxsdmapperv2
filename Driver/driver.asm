@@ -1,4 +1,4 @@
-; Projeto MSX SD-Mapper
+; Projeto MSX SD-Mapper v2
 
 ; Copyright (c) 2014 Fabio Belavenuto
 ; Copyright (c) 2017, 2018 Fabio R. Schmidlin 
@@ -11,6 +11,8 @@
 ; Please see the CERN OHL v.1.1 for applicable conditions
 
 ; Technical info:
+; The SD-Mapper v2 uses an ASCII16 ROM mapper and the following register set is only enabled at page-7.
+;
 ; 7B00h~7EFFh	: SPI data transfer window (read/write)
 ; 7FF0h		: Interface status and card select register (read/write)
 ;	<read>
@@ -2271,7 +2273,7 @@ WAIT_RESP_FE:
 	ld	(TIMERREG),a
 
 .loop2:	ld	a,(SPIDATA)
-	cp	c		; resposta é $FE ?
+	cp	c		; resposta Ã© $FE ?
 	ret	z		; sim, retornamos com carry=0
 	ld	a,(TIMERREG)
 	or	a
