@@ -1,0 +1,3 @@
+[submodule "SW/msxclib"]
+	path = SW/msxclib
+	url = git@github.com:fbelavenuto/msxclib.git

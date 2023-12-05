@@ -1,3 +1,7 @@
+	.CPU Z80
+	TITLE Nextor driver for SD Mapper v2 v1.1.0
+	.relab
+
 ; Projeto MSX SD-Mapper v2
 
 ; Copyright (c) 2014 Fabio Belavenuto
@@ -36,8 +40,6 @@
 ; A Special thanks goes to Elm-chan, for publishing the documentation we used to
 ; create this driver. http://elm-chan.org/docs/mmc/mmc_e.html
 
-	output	"driver.bin"
-
 ;-----------------------------------------------------------------------------
 ;
 ; Driver configuration constants
@@ -46,14 +48,16 @@
 CMDTIMEOUT	equ	2	; Command accepted timeout	: 2*2.6nS
 READYTIMEOUT	equ	385	; Card ready timeout		: 10 second
 DETTIMEOUT	equ	385	; Detection timeout		: 385*2.6nS = 1 second
- DEFINE TURBOINIT	; Execute DRV_INIT with the turbo enabled 
- DEFINE DSKEMU		; Include a built-in floppy disk emulator
-; DEFINE PARALLELCARD	; Allows parallel card processing. Seems to require
+
+; DEFINES
+TURBOINIT 	equ 1	; Execute DRV_INIT with the turbo enabled 
+DSKEMU 		equ 1	; Include a built-in floppy disk emulator
+; PARALLELCARD	equ 1 	; Allows parallel card processing. Seems to require
 			; independent communication lines for each card
-; DEFINE HASMEGARAM	; Driver for an SD-Mapper with MegaRAM
-; DEFINE DEBUG1		; Enable level-1 debugging (Only status queries)
-; DEFINE DEBUG2		; Enable level-2 debugging (RW calls)
-; DEFINE DEBUG3		; Enable level-3 debugging (requires level-1). Also logs invalid DEVs and LUN numbers
+; HASMEGARAM	equ 1	; Driver for an SD-Mapper with MegaRAM
+; DEBUG1	equ 1	; Enable level-1 debugging (Only status queries)
+; DEBUG2	equ 1	; Enable level-2 debugging (RW calls)
+; DEBUG3	equ 1	; Enable level-3 debugging (requires level-1). Also logs invalid DEVs and LUN numbers
 
 
 ;Driver type:
@@ -71,153 +75,143 @@ DRV_HOTPLUG	equ	1
 
 ;Driver version
 
-VER_MAIN	equ	1
-VER_SEC		equ	1
-VER_REV		equ	0
+include "VERSION.INC"
+;VER_MAIN	equ	1
+;VER_SEC		equ	1
+;VER_REV		equ	0
 
 ;-----------------------------------------------------------------------------
 ; SPI addresses. Check the Technical info above for the bit contents
 
-SPIDATA		= $7B00		; read/write
-SPICTRL		= $7FF0		; write
-SPISTATUS	= $7FF0		; read
-TIMERREG	= $7FF1		; read/write
+SPIDATA		equ #7B00		; read/write
+SPICTRL		equ #7FF0		; write
+SPISTATUS	equ #7FF0		; read
+TIMERREG	equ #7FF1		; read/write
 
 ; Interface status flags
-IF_RAM		= 0		; 1=Interface RAM is enabled
-IF_DRVER	= 1		; RAM mode: 0=MegaRAM, 1=MemoryMapper
-IF_M_RAM	= (1 shl IF_RAM)		; bitmask for IF_RAM
-IF_M_DRVER	= (1 shl IF_DRVER)		; bitmask for IF_DRVER
+IF_RAM		equ 0		; 1=Interface RAM is enabled
+IF_DRVER	equ 1		; RAM mode: 0=MegaRAM, 1=MemoryMapper
+IF_M_RAM	equ (1 shl IF_RAM)		; bitmask for IF_RAM
+IF_M_DRVER	equ (1 shl IF_DRVER)		; bitmask for IF_DRVER
 
 ; card slot status flags
-SD_DSKCHG	= 0		; SD card changed since last status check
-SD_PRESENT	= 1		; SD card present
-SD_WRTPROT	= 2		; SD card is write protected
-SD_M_DSKCHG	= (1 shl SD_DSKCHG)		; bitmask for SD_DSKCHG
-SD_M_PRESENT	= (1 shl SD_PRESENT)		; bitmask for SD_PRESENT
-SD_M_WRTPROT	= (1 shl SD_WRTPROT)		; bitmask for SD_WRTPROT
+SD_DSKCHG	equ 0		; SD card changed since last status check
+SD_PRESENT	equ 1		; SD card present
+SD_WRTPROT	equ 2		; SD card is write protected
+SD_M_DSKCHG	equ (1 shl SD_DSKCHG)		; bitmask for SD_DSKCHG
+SD_M_PRESENT	equ (1 shl SD_PRESENT)		; bitmask for SD_PRESENT
+SD_M_WRTPROT	equ (1 shl SD_WRTPROT)		; bitmask for SD_WRTPROT
 
 ; SPI commands: 
-CMD0	= 0  | $40
-CMD1	= 1  | $40
-CMD8	= 8  | $40
-CMD9	= 9  | $40
-CMD10	= 10 | $40
-CMD12	= 12 | $40
-CMD13	= 13 | $40
-CMD16	= 16 | $40
-CMD17	= 17 | $40
-CMD18	= 18 | $40
-CMD24	= 24 | $40
-CMD25	= 25 | $40
-CMD55	= 55 | $40
-CMD58	= 58 | $40
-ACMD23	= 23 | $40
-ACMD41	= 41 | $40
+CMD0	equ 0  OR #40
+CMD1	equ 1  OR #40
+CMD8	equ 8  OR #40
+CMD9	equ 9  OR #40
+CMD10	equ 10 OR #40
+CMD12	equ 12 OR #40
+CMD13	equ 13 OR #40
+CMD16	equ 16 OR #40
+CMD17	equ 17 OR #40
+CMD18	equ 18 OR #40
+CMD24	equ 24 OR #40
+CMD25	equ 25 OR #40
+CMD55	equ 55 OR #40
+CMD58	equ 58 OR #40
+ACMD23	equ 23 OR #40
+ACMD41	equ 41 OR #40
 
 ; SD card errors
-R1ERR:
-.IDLE		= 1	; In idle state
-.ERARST		= 2	; Erase reset
-.ILLGCMD	= 3	; Illegal command
-.CRCERR		= 4	; Communication CRC error
-.ERAERR		= 5	; Erase sequence error
-.ADDRERR	= 6	; Address error
-.PARMERR	= 7	; Parameter error
-.M_IDLE		= (1 shl .IDLE)
-.M_ERARST	= (1 shl .ERARST)
-.M_ILLGCMD	= (1 shl .ILLGCMD)
-.M_CRCERR	= (1 shl .CRCERR)
-.M_ERAERR	= (1 shl .ERAERR)
-.M_ADDRERR	= (1 shl .ADDRERR)
-.M_PARMERR	= (1 shl .PARMERR)
+R1ERR.IDLE	equ 1	; In idle state
+R1ERR.ERARST	equ 2	; Erase reset
+R1ERR.ILLGCMD	equ 3	; Illegal command
+R1ERR.CRCERR	equ 4	; Communication CRC error
+R1ERR.ERAERR	equ 5	; Erase sequence error
+R1ERR.ADDRERR	equ 6	; Address error
+R1ERR.PARMERR	equ 7	; Parameter error
+R1ERR.M_IDLE	equ (1 shl R1ERR.IDLE)
+R1ERR.M_ERARST	equ (1 shl R1ERR.ERARST)
+R1ERR.M_ILLGCMD	equ (1 shl R1ERR.ILLGCMD)
+R1ERR.M_CRCERR	equ (1 shl R1ERR.CRCERR)
+R1ERR.M_ERAERR	equ (1 shl R1ERR.ERAERR)
+R1ERR.M_ADDRERR	equ (1 shl R1ERR.ADDRERR)
+R1ERR.M_PARMERR	equ (1 shl R1ERR.PARMERR)
 
-; Work area stuctures 
- STRUCT WRKAREA
-TRLDIR		dw	; Pointer to the R800 data transfer helper
-NUMSD		db 	; Currently selected card: 1 or 2 
-CARDFLAGS	db 	; Flags that indicate card-change or card error 
-			; b0: card1 error
-			; b1: card2 error
-			; b2: card1 LUN changed flag
-			; b3: card2 LUN changed flag
-			; b4: card1 DEV changed flag
-			; b5: card2 DEV changed flag
-			; b6: card1 version
-			; b7: card2 version
-NUMBLOCKS	db 	; Number of blocks in multi-block operations 
-TEMP		db	; Buffer for temporary data 
-DSKEMU.DSKDEV	db	; Floppy emulation: b0~b2=DEV, b3~b7=Disk number 
-;DSKEMU.VDPDR	db	; VDP.DR cached value
-DSKEMU.VDPDW	db	; VDP.DW cached value
- ENDS
+WRKAREA.TRLDIR		equ 0			; Pointer to the R800 data transfer helper
+WRKAREA.NUMSD		equ WRKAREA.TRLDIR+2		; Currently selected card: 1 or 2 
+WRKAREA.CARDFLAGS	equ WRKAREA.NUMSD+1		; Flags that indicate card-change or card error 
+					; b0: card1 error
+					; b1: card2 error
+					; b2: card1 LUN changed flag
+					; b3: card2 LUN changed flag
+					; b4: card1 DEV changed flag
+					; b5: card2 DEV changed flag
+					; b6: card1 version
+					; b7: card2 version
+WRKAREA.NUMBLOCKS	equ WRKAREA.CARDFLAGS+1		; Number of blocks in multi-block operations 
+WRKAREA.TEMP		equ WRKAREA.NUMBLOCKS+1		; Buffer for temporary data 
+WRKAREA.DSKEMU.DSKDEV	equ WRKAREA.TEMP+1		; Floppy emulation: b0~b2=DEV, b3~b7=Disk number 
+;WRKAREA.DSKEMU.VDPDR	equ WRKAREA.DSKEMU.DSKDEV+1	; VDP.DR cached value
+WRKAREA.DSKEMU.VDPDW	equ WRKAREA.DSKEMU.DSKDEV+1	; VDP.DW cached value
+WRKAREA.END		equ WRKAREA.DSKEMU.VDPDW+1
 
 ; WRKAREA.CARDFLAGS shift amount and direction
-WCF_N_ERROR	= 0	; SD card error
-WCF_L_LUNCHG	= 2	; LUN has changed software flag
-WCF_L_DEVCHG	= 4	; Device has changed software flag
-WCF_R_CRDVER	= 2	; Current card version
+WCF_N_ERROR	equ 0	; SD card error
+WCF_L_LUNCHG	equ 2	; LUN has changed software flag
+WCF_L_DEVCHG	equ 4	; Device has changed software flag
+WCF_R_CRDVER	equ 2	; Current card version
 
- STRUCT CID
-MID		db	; Manufacturer ID
-OID		ds 2	; OEM ID
-PNM		ds 5	; Product Name
-PRV		db
-PSN		ds 4	; Product Serial Number
-RSVMDT		dw	; Reserved, Manufacturing date
-CRC		db	; b7=1, b6~b0 = CRC7 checksum
- ENDS
-
- STRUCT WTMPDATA
-BUFFER		ds 512	; Buffer for the IDENTIFY info
-SECTNUM		dd	; Pointer to the text "Master:" or "Slave:"
- ENDS
-
-
+CID.MID		equ 0			; Manufacturer ID
+CID.OID		equ CID.MID+1		; OEM ID
+CID.PNM		equ CID.OID+2		; Product Name
+CID.PRV		equ CID.PNM+5
+CID.PSN		equ CID.PRV+1		; Product Serial Number
+CID.RSVMDT	equ CID.PSN+4		; Reserved, Manufacturing date
+CID.CRC		equ CID.RSVMDT+2	; b7=1, b6~b0 = CRC7 checksum
+CID.END		equ CID.CRC+1
 
 ;-----------------------------------------------------------------------------
 ;
 ; Standard BIOS and work area entries
-CALSLT	= $001C		; Call routine in any slot
-CALLF	= $0030		; Call routine in any slot
-INITXT	= $006C		; Inicializa SCREEN0
-CHSNS	= $009C		; Sense keyboard buffer for character
-CHGET	= $009F		; Get character from keyboard buffer
-CHPUT	= $00A2		; A=char
-BEEP	= $00C0		; Does a beep
-CLS	= $00C3		; Chamar com A=0
-ERAFNK	= $00CC		; Erase function key display
-SNSMAT	= $0141		; Read row of keyboard matrix
-KILBUF	= $0156		; Clear keyboard buffer
-EXTROM	= $015F
-CHGCPU	= $0180		; Change the turbo mode
-GETCPU	= $0183		; Get the turbo mode
+CALSLT	equ #001C		; Call routine in any slot
+CALLF	equ #0030		; Call routine in any slot
+INITXT	equ #006C		; Inicializa SCREEN0
+CHSNS	equ #009C		; Sense keyboard buffer for character
+CHGET	equ #009F		; Get character from keyboard buffer
+CHPUT	equ #00A2		; A=char
+BEEP	equ #00C0		; Does a beep
+CLS	equ #00C3		; Chamar com A=0
+ERAFNK	equ #00CC		; Erase function key display
+SNSMAT	equ #0141		; Read row of keyboard matrix
+KILBUF	equ #0156		; Clear keyboard buffer
+EXTROM	equ #015F
+CHGCPU	equ #0180		; Change the turbo mode
+GETCPU	equ #0183		; Get the turbo mode
 
 ; subROM functions
-SDFSCR	= $0185
-REDCLK	= $01F5
+SDFSCR	equ #0185
+REDCLK	equ #01F5
 
 
 ; System variables
-VDP.DR	= $0006
-VDP.DW	= $0007
-MSXVER	= $002D
-LINL40	= $F3AE		; Width
-LINLEN	= $F3B0
-TEMP3	= $F69D
-INTFLG	= $FC9B
-SCRMOD	= $FCAF
-EXPTBL	= $FCC1
-RG15SA	= $FFEE		; VDP Register 15 Save copy.
+VDP.DR	equ #0006
+VDP.DW	equ #0007
+MSXVER	equ #002D
+LINL40	equ #F3AE		; Width
+LINLEN	equ #F3B0
+TEMP3	equ #F69D
+INTFLG	equ #FC9B
+SCRMOD	equ #FCAF
+EXPTBL	equ #FCC1
+RG15SA	equ #FFEE		; VDP Register 15 Save copy.
 
 
 
 ;-----------------------------------------------------------------------------
 
 
-	org		$4000
+	org		#4000
 
-	ds		256, $FF		; 256 dummy bytes
+	ds		256, #FF		; 256 dummy bytes
 
 DRV_START:
 
@@ -229,7 +223,7 @@ DRV_START:
 ;This is a 2 byte buffer to store the address of code to be executed.
 ;It is used by some of the kernel page 0 routines.
 
-CODE_ADD:	equ	$F1D0
+CODE_ADD:	equ	#F1D0
 
 
 ;-----------------------------------------------------------------------------
@@ -255,24 +249,22 @@ EIPARM	equ	08Bh
 ; Macros
 ;
 
- MACRO BYTE2STR value
-
- IF value > 99
-	db	((value / 100) % 10)+$30
+BYTE2STR: MACRO value
+ IF (value GT 99)
+	db	((value / 100) MOD 10) + #30
  ENDIF
- IF value > 9
-	db	((value / 10) % 10)+$30
+ IF (value GT 9)
+	db	((value / 10) MOD 10) + #30
  ENDIF
-	db	(value % 10)+$30
+	db	(value MOD 10) + #30
+ENDM
 
- ENDM
-
- IFDEF DEBUG1
- MACRO PRTSTR	string
+IFDEF DEBUG1
+ PRTSTR: MACRO string
 	call	PRTSTRCALL
-	ABYTEZ 0 string
+	DEFZ string
  ENDM
- ENDIF
+ENDIF
 
 ;-----------------------------------------------------------------------------
 ;
@@ -377,7 +369,7 @@ SING_DBL  equ     7820h ;"1-Single side / 2-Double side"
 ;    bit 1: 1 for hot-plug devices supported (device-based drivers only)
 ;    bit 2: 1 if the driver implements the DRV_CONFIG routine
 
-	db 1+2*DRV_HOTPLUG+4
+	db DRV_TYPE + 2 * DRV_HOTPLUG + 4
 
 ;-----------------------------------------------------------------------------
 ;
@@ -535,7 +527,7 @@ DRV_INIT:
 
 .sdhcinit:	; FBLabs SDXC Interface initialization
 	call	.printmode		; Print the switches configuration
-	ld	a,$3C			; Initialize the card flags
+	ld	a,#3C			; Initialize the card flags
 	ld	(ix+WRKAREA.CARDFLAGS), a
 
 	ld	a, 1			; detectar cartao 1
@@ -546,7 +538,7 @@ DRV_INIT:
 	call	INSTR800HLP		; Install R800 data copy on workarea
 
  IFDEF DSKEMU
-	call	FLOPPYEMU.DETIMG	; Detect a floppy disk image
+	call	DETIMG	; Detect a floppy disk image
 	ld	a,(IX+WRKAREA.DSKEMU.DSKDEV)	
 	or	a			; Disk emulation enabled? 
 	ld	de,strDskEmu
@@ -922,10 +914,12 @@ DEV_RW:
 
 	call	getWorkArea	; IX=Work area pointer
 	ld	(ix+WRKAREA.NUMBLOCKS),b	; save the number of blocks to transfer 
-	push	de,hl
+	push	de
+	push	hl
 	call	slctNchkCard	; Select and check the card
 	ld	c,e		; c=error code
-	pop	hl,de
+	pop	hl
+	pop	de
 	jr	c,.errorCard
 	jr	nz,.cardOk
 
@@ -987,7 +981,7 @@ DEV_R:
 	push	de
 	pop	iy
  IFDEF DSKEMU
-	call	FLOPPYEMU.GETSECT	; Get the sector number
+	call	GETSECT	; Get the sector number
 	ld	a,EIDEVL	; error: Invalid device or LUN 
 	ret	c
  ELSE
@@ -1035,7 +1029,7 @@ DEV_W:
 	pop	iy
 
  IFDEF DSKEMU
-	call	FLOPPYEMU.GETSECT	; Get the sector number
+	call	GETSECT	; Get the sector number
 	ld	a,EIDEVL	; error: Invalid device or LUN 
 	ret	c
  ELSE
@@ -1150,9 +1144,11 @@ DEV_INFO:
 	ret			; retorna com A=0 (OK)
 
 .notBasicInfo:
-	push	hl,bc
+	push	hl
+	push	bc
 	call	slctNchkCard	; Select and check the card
-	pop	bc,hl
+	pop	bc
+	pop	hl
 	jr	c,.cardError	; Card error? No info
 	jr	nz,.notBasicInfo2 ; Card present, get its info
  IFDEF DEBUG1
@@ -1190,7 +1186,8 @@ DEV_INFO:
 	call	flushCxD	; Flush the rest of the CID data
 	call	disableSDs
 
-	ld	hl,de		; Save the Nextor buffer pointer 
+	ld	h, d		; Save the Nextor buffer pointer 
+	ld	l, e
 	ld	b,64		; Fill the buffer with spaces 
 	ld	a,' '
 .loop1:
@@ -1327,12 +1324,20 @@ DEV_INFO:
 DEV_STATUS:
 	ld	d,a		; d=Device number
 	cp	3		; 2 dispositivos somente
+ IFDEF DEBUG3
 	jr	nc,.noDev
+ ELSE
+	jr	nc,.devNotAvbl
+ ENDIF
 	ld	a,b
 	or	a		; Device itself status?
 	jp	z,.devStatus	; I'm fine, thanks
 	dec	a		; Only LUN=1 are allowed
+ IFDEF DEBUG3
 	jr	nz,.noLun
+ ELSE
+	jr	nz,.devNotAvbl
+ ENDIF
 ;.getStatus:
  IFDEF DEBUG1
 	ld	a,'S'		; DEV_STATUS debug ID
@@ -1357,7 +1362,7 @@ DEV_STATUS:
 	; routine has detected a change before	
 	ld	a,(ix+WRKAREA.CARDFLAGS)
 	or	e		; Mix with the previous flags
-	and	$0C		; Crop the LUN changed flags
+	and	#0C		; Crop the LUN changed flags
 	rrca			; Adjust the flags position
 	rrca
 	and	(ix+WRKAREA.NUMSD) ; Crop the LUN changed flag for this card
@@ -1403,9 +1408,6 @@ DEV_STATUS:
 	call	PRTCHAR
 	xor	a
 	ret
- ELSE
-.noLun	equ	.devNotAvbl
-.noDev	equ	.devNotAvbl
  ENDIF
 .noCard:
  IFDEF DEBUG1
@@ -1447,7 +1449,7 @@ DEV_STATUS:
 	; routine has detected a change before	
 	ld	a,(ix+WRKAREA.CARDFLAGS)
 	or	e		; Mix with the previous flags
-	and	$30		; Crop the LUN changed flags
+	and	#30		; Crop the LUN changed flags
 	rrca			; Adjust the flags position
 	rrca
 	rrca
@@ -1493,11 +1495,23 @@ DEV_STATUS:
 
 LUN_INFO:
 	or	a		; DEV=0 is invalid
+ IFDEF DEBUG3
 	jr	z,.noDev
+ ELSE
+	jr	z,.quitError
+ ENDIF
 	cp	3		; Max 2 devices
+ IFDEF DEBUG3
 	jr	nc,.noDev
+ ELSE
+	jr	nc,.quitError
+ ENDIF
 	dec	b		; Only LUN=1 
+ IFDEF DEBUG3
 	jr	nz,.noLun
+ ELSE
+	jr	nz,.quitError
+ ENDIF
 
  IFDEF DEBUG1
 	push	af
@@ -1517,7 +1531,11 @@ LUN_INFO:
 	call	slctNchkCard	; Select and check the card
 	pop	hl
 	or	a
+ IFDEF DEBUG1
 	jr	c,.cardError1	; Card error? Abort
+ ELSE
+	jr	c,.noMedia	; Card error? Abort
+ ENDIF
 	jr	nz,.devOk	; device is available
 .noMedia:
  IFDEF DEBUG1
@@ -1543,9 +1561,6 @@ LUN_INFO:
 	ld	a,'e'		; LUN_INFO status: Card error
 	call	PRTCHAR
 	jr	.quitError
- ELSE
-.cardError1	equ	.noMedia
-.cardError2	equ	.quitError
  ENDIF
 
  IFDEF DEBUG3
@@ -1559,9 +1574,6 @@ LUN_INFO:
 	call	PRTCHAR
 	ld	a,1
 	ret
- ELSE
-.noLun	equ	.quitError:
-.noDev	equ	.quitError:
  ENDIF
 
 .devOk:
@@ -1575,8 +1587,11 @@ LUN_INFO:
 
 	ld	de,CMD9*256+0	; Read the CSD
 	call	setCxDrd
+ IFDEF DEBUG1
 	jr	c,.cardError2
-
+ ELSE
+	jr	c,.quitError
+ ENDIF
 	ex	de,hl		; de=LUN_INFO buffer+3
 	ld	hl,SPIDATA
 
@@ -1588,9 +1603,9 @@ LUN_INFO:
 	djnz	.skipCSDheader	
 
 	ld	a,c
-	and	$C0		; Crop the CSD version ID
+	and	#C0		; Crop the CSD version ID
 	jr	z,.calculaCSD1
-	cp	$40
+	cp	#40
 	jr	z,.calculaCSD2
 
 	ld	b,18-5
@@ -1638,7 +1653,7 @@ LUN_INFO:
 .calculaCSD1:
 	push	de		; save the current Nextor buffer pointer
 	ld	a,(hl)
-	and	$0F		; isola READ_BL_LEN
+	and	#0F		; isola READ_BL_LEN
 	push	af
 ;	inc	hl
 	ld	a,(hl)		; 2 primeiros bits de C_SIZE
@@ -1648,7 +1663,7 @@ LUN_INFO:
 	ld	e,(hl)		; 8 bits de C_SIZE (DE contem os primeiros 10 bits de C_SIZE)
 ;	inc	hl
 	ld	a,(hl)
-	and	$C0		; 2 ultimos bits de C_SIZE
+	and	#C0		; 2 ultimos bits de C_SIZE
 	add	a		; rotaciona a esquerda
 	rl	e		; rotaciona para DE
 	rl	d
@@ -1662,7 +1677,7 @@ LUN_INFO:
 	ld	b, a		; B contem os 2 bits de C_SIZE_MUL
 ;	inc	hl						
 	ld	a,(hl)		; proximo byte
-	and	$80		; 1 bit de C_SIZE_MUL
+	and	#80		; 1 bit de C_SIZE_MUL
 	add	a		; rotaciona para esquerda jogando no carry
 	rl	b		; rotaciona para B
 	inc	b		; agora B contem os 3 bits de C_SIZE_MUL
@@ -1714,7 +1729,7 @@ LUN_INFO:
 	ld	a,(hl)
 
 	ld	a,(hl)
-	and	$3F
+	and	#3F
 	ld	c,a
 ;	inc	hl
 	ld	d,(hl)
@@ -1799,7 +1814,7 @@ testaWP:
 	ld	(SPICTRL), a
 	ld	a, (SPISTATUS)	; testar se cartao esta protegido
 ;	call	disableSDs
-	and	$04
+	and	#04
 	ret			; se A for 0 cartao esta protegido
 
 
@@ -1856,7 +1871,7 @@ detectaCartao:
 	cpl
 	ld	c,a			; c=b7,b6: Card number reverse mask
 	ld	a,b			; Get the part of the OCR we need 
-	and	$40			; Crop the card version bit
+	and	#40			; Crop the card version bit
 	bit	7,e			; Is the card-2 slot selected?
 	jr	z,.saveSDver		; No, skip
 	add	a			; Adjust the version bit position
@@ -1950,13 +1965,13 @@ detSDversion:
 	PRTSTR	"<detSDversion"
  ENDIF
 	ld	a, CMD8
-	ld	de, $1AA
+	ld	de, #1AA
 	call	SD_SEND_CMD_2_ARGS_GET_R3
 	jr	c,.v1Card
 	ld	a,d
 	and	1
 	ld	d,a
-	ld	hl,$1AA
+	ld	hl,#1AA
 	sbc	hl,de			; Lower 12-bit were 1AAh?
  IFDEF DEBUG2
 	ld	a,0
@@ -2001,7 +2016,7 @@ detSDversion:
 
 
 .init:
-	ld	bc,(LOW DETTIMEOUT)*256+(HIGH DETTIMEOUT)
+	ld	bc, LOW DETTIMEOUT * 256 + HIGH DETTIMEOUT
 .loop1:
 	ld	a,255			; 2.6mS 
 	ld	(TIMERREG),a
@@ -2091,7 +2106,7 @@ iniciaSD:
 	call	disableSDs
 
 	ld	b,10		; enviar 80 pulsos de clock com cartao desabilitado
-	ld	a,$FF		; manter MOSI em 1
+	ld	a,#FF		; manter MOSI em 1
 enviaClocksInicio:
 	ld	(SPIDATA),a
 	djnz	enviaClocksInicio
@@ -2151,7 +2166,7 @@ SD_SEND_ACMD41:
 	ld	a,CMD55
 	call	SD_SEND_CMD_NO_ARGS
 	ld	a,ACMD41
-	ld	bc,$4000
+	ld	bc,#4000
 	ld	d,c
 	ld	e,c
 	jr	SD_SEND_CMD_GET_ERROR
@@ -2164,7 +2179,8 @@ SD_SEND_CMD1:
 	ld	a,CMD1
 SD_SEND_CMD_NO_ARGS:
 	ld	bc,0
-	ld	de,bc
+	ld	d, b
+	ld	e, c
 SD_SEND_CMD_GET_ERROR:		; Send command with BC:DE as its parameter
 	call	SD_SEND_CMD
 	jr	c,disableSDs	; Quit on error
@@ -2184,7 +2200,7 @@ SD_SEND_CMD_2_ARGS_TEST_BUSY:
 	ld	bc,0
 	call	SD_SEND_CMD
 	ld	b, a
-	and	$FE		; Test all error flags except on bit0 
+	and	#FE		; Test all error flags except on bit0 
 	ld	a, b
 	jr	nz,setaErro	; Abort if there are any errors 
 	ret
@@ -2223,9 +2239,11 @@ SD_SEND_CMD_2_ARGS_GET_R3:
 SD_SEND_CMD:
 	call	setaSDAtual
  IFDEF PARALLELCARD
-	push	af,bc
+	push	af
+	push	bc
 	call	WAIT_RESP_NO_00
-	pop	bc,af
+	pop	bc
+	pop	af
  ENDIF
 	ld	(SPIDATA), a
 	push	hl
@@ -2237,10 +2255,10 @@ SD_SEND_CMD:
 	ld	(SPIDATA),hl
 	pop	hl
 	cp	CMD0
-	ld	b,$95		; CMD0 CRC
+	ld	b,#95		; CMD0 CRC
 	jr	z,.enviaCRC
 	cp	CMD8
-	ld	b,$87		; CMD8 CRC
+	ld	b,#87		; CMD8 CRC
 	jr	z,.enviaCRC
 
 	; Disabled these checksums because they caused problems
@@ -2250,12 +2268,12 @@ SD_SEND_CMD:
 	; approach will be to send the appropriate ACMD41 checksum to
 	; the respective card version
 ;	cp	CMD55
-;	ld	b,$65		; CMD55 CRC
+;	ld	b,#65		; CMD55 CRC
 ;	jr	z,.enviaCRC
 ;	cp	ACMD41
-;	ld	b,$77		; ACMD41 CRC  (E5h for non-SDHC/SDXC cards)
+;	ld	b,#77		; ACMD41 CRC  (E5h for non-SDHC/SDXC cards)
 ;	jr	z,.enviaCRC
-	ld	b,$FF		; dummy CRC
+	ld	b,#FF		; dummy CRC
 .enviaCRC:
 	ld	a,b
 	ld	(SPIDATA),a
@@ -2263,17 +2281,17 @@ SD_SEND_CMD:
 
 
 ; ------------------------------------------------
-; Esperar que resposta do cartao seja $FE
+; Esperar que resposta do cartao seja #FE
 ; Destroi AF, BC
 ; ------------------------------------------------
 WAIT_RESP_FE:
-	ld	bc,CMDTIMEOUT*256+$FE
+	ld	bc,CMDTIMEOUT*256+#FE
 .loop1:
 	ld	a,255		; 2.6mS 
 	ld	(TIMERREG),a
 
 .loop2:	ld	a,(SPIDATA)
-	cp	c		; resposta é $FE ?
+	cp	c		; resposta é #FE ?
 	ret	z		; sim, retornamos com carry=0
 	ld	a,(TIMERREG)
 	or	a
@@ -2286,17 +2304,17 @@ WAIT_RESP_FE:
 
 ; ------------------------------------------------
 ; Esperar que resposta do cartao seja diferente
-; de $FF
+; de #FF
 ; Destroi AF, BC
 ; ------------------------------------------------
 WAIT_RESP_NO_FF:
-	ld	bc,CMDTIMEOUT*256+$FF
+	ld	bc,CMDTIMEOUT*256+#FF
 .loop1:
 	ld	a,255		; 2.6mS 
 	ld	(TIMERREG),a
 
 .loop2:	ld	a,(SPIDATA)
-	cp	c		; A=$FF?	
+	cp	c		; A=#FF?	
 	ccf
 	ret	nc		; No, quit
 	ld	a,(TIMERREG)
@@ -2310,17 +2328,17 @@ WAIT_RESP_NO_FF:
 
 ; ------------------------------------------------
 ; Esperar que resposta do cartao seja diferente
-; de $00
+; de #00
 ; Destroi A, BC
 ; ------------------------------------------------
 WAIT_RESP_NO_00:
-	ld	bc,(LOW READYTIMEOUT)*256+(HIGH READYTIMEOUT)
+	ld	bc, LOW READYTIMEOUT * 256 + HIGH READYTIMEOUT
 .loop1:	ld	a,255			; 2.6mS 
 	ld	(TIMERREG),a
 
 .loop2:	ld	a, (SPIDATA)
 	or	a
-	ret	nz		; se resposta for <> $00, sai
+	ret	nz		; se resposta for <> #00, sai
 	ld	a,(TIMERREG)
 	or	a
 	jr	nz,.loop2
@@ -2412,20 +2430,20 @@ GravarBloco:
 	call	PRTDOT
  ENDIF
 .loop:
-	ld	a, $FC		; mandar $FC para indicar que os proximos dados sao
+	ld	a, #FC		; mandar #FC para indicar que os proximos dados sao
 	ld	(SPIDATA),a	; dados para gravacao
 
 	ld	de,SPIDATA
 	call	RUN_HLPR
 
-;	ld	a,$FF		; envia dummy CRC
+;	ld	a,#FF		; envia dummy CRC
 ;	ld	(SPIDATA),a	; Can't be done with ld (SPIDATA),de. It's too fast
 ;	ld	(SPIDATA),a
 	ld	d,e		; CRC1=CRC2
 	ld	(SPIDATA),de	; Send a dummy CRC
 
 	call	WAIT_RESP_NO_FF	; esperar cartao
-	and	$1F		; Crop the "Data Response"
+	and	#1F		; Crop the "Data Response"
 	cp	5		; Data accepted?
 	scf
 	jp	nz,DRERROR.multi	; Data response error 
@@ -2438,7 +2456,7 @@ GravarBloco:
 	jp	nz,.loop
 
 	ld	hl,(SPIDATA)	; acabou os blocos, fazer 2 dummy reads
-	ld	a, $FD		; enviar $FD para informar ao cartao que acabou os dados
+	ld	a, #FD		; enviar #FD para informar ao cartao que acabou os dados
 	ld	(SPIDATA),a
 	ld	hl,(SPIDATA)	; 2 dummy reads
  IFDEF PARALLELCARD
@@ -2462,20 +2480,20 @@ GravarBloco:
  IFDEF DEBUG1
 	call	PRTDOT
  ENDIF
-	ld	a, $FE		; mandar $FE para indicar que vamos mandar dados para gravacao
+	ld	a, #FE		; mandar #FE para indicar que vamos mandar dados para gravacao
 	ld	(SPIDATA),a
 
 	ld	de,SPIDATA
 	call	RUN_HLPR
 
-;	ld	a,$FF		; envia dummy CRC
+;	ld	a,#FF		; envia dummy CRC
 ;	ld	(SPIDATA),a	; Can't be done with ld (SPIDATA),de. It's too fast
 ;	ld	(SPIDATA),a
 	ld	h,l		; CRC1=CRC2
 	ld	(SPIDATA),hl	; Send a dummy CRC
 
 	call	WAIT_RESP_NO_FF	; esperar cartao
-	and	$1F		; Crop the "Data Response"
+	and	#1F		; Crop the "Data Response"
 	cp	5		; Data accepted?
 	scf
 	jr	nz,DRERROR.single	; Data response error 
@@ -2536,11 +2554,11 @@ DRERROR:	; Data response error
 	call	SD_SEND_CMD_NO_ARGS
 	pop	af
 .single:
-	cp	$0B		; CRC error?
+	cp	#0B		; CRC error?
 	ld	e,EDATA
 	scf
 	jp	z,disableSDs
-	cp	$0D		; Data write error?
+	cp	#0D		; Data write error?
  IFDEF DEBUG1
 	call	nz,PRTHEX
  ENDIF
@@ -2778,10 +2796,10 @@ HexToAscii:
 	call	.conv
 	ld  	a, c
 .conv:
-	and	$0F
-	add	$90
+	and	#0F
+	add	#90
 	daa
-	adc	$40
+	adc	#40
 	daa
 	ld	(hl),a
 	inc	hl
@@ -2823,9 +2841,9 @@ tblMakerIndex:
 	dw	tblMakerNames.idx04
 	dw	tblMakerNames.idUkn
 	dw	tblMakerNames.idx06
- REPT $10-$06
+ REPT #10-#06
 	dw	tblMakerNames.idUkn
- ENDR
+ ENDM
 	dw	tblMakerNames.idx11
 	dw	tblMakerNames.idUkn
 	dw	tblMakerNames.idx13
@@ -2841,37 +2859,37 @@ tblMakerIndex:
 	dw	tblMakerNames.idx1D
 	dw	tblMakerNames.idUkn
 	dw	tblMakerNames.idx1F
- REPT $26-$1F
+ REPT #26-#1F
 	dw	tblMakerNames.idUkn
- ENDR
+ ENDM
 	dw	tblMakerNames.idx27
 	dw	tblMakerNames.idx28
- REPT $30-$28
+ REPT #30-#28
 	dw	tblMakerNames.idUkn
- ENDR
+ ENDM
 	dw	tblMakerNames.idx31
- REPT $40-$31
+ REPT #40-#31
 	dw	tblMakerNames.idUkn
- ENDR
+ ENDM
 	dw	tblMakerNames.idx41
- REPT $72-$41
+ REPT #72-#41
 	dw	tblMakerNames.idUkn
- ENDR
+ ENDM
 	dw	tblMakerNames.idx73
 	dw	tblMakerNames.idx74
 	dw	tblMakerNames.idUkn
 	dw	tblMakerNames.idx76
- REPT $81-$76
+ REPT #81-#76
 	dw	tblMakerNames.idUkn
- ENDR
+ ENDM
 	dw	tblMakerNames.idx82
- REPT $88-$82
+ REPT #88-#82
 	dw	tblMakerNames.idUkn
- ENDR
+ ENDM
 	dw	tblMakerNames.idx89
- REPT $9B-$89
+ REPT #9B-#89
 	dw	tblMakerNames.idUkn
- ENDR
+ ENDM
 	dw	tblMakerNames.idx9C
 	dw	tblMakerNames.end
 .end:
@@ -2879,32 +2897,31 @@ tblMakerIndex:
 
 
 tblMakerNames:
-.idUkn:	ABYTEC 0 	"Unknown"
-.idx01:	ABYTEC 0 	"Panasonic"
-.idx02:	ABYTEC 0 	"Toshiba"
-.idx03: ABYTEC 0 	"SanDisk"
-.idx04: ABYTEC 0 	"SMI-S"
-.idx06: ABYTEC 0 	"Renesas"
-.idx11: ABYTEC 0 	"Dane-Elec"
-.idx13: ABYTEC 0 	"KingMax"
-.idx18: ABYTEC 0 	"Infineon"
-.idx1A: ABYTEC 0 	"PQI"
-.idx1B: ABYTEC 0 	"Samsung"
-.idx1C: ABYTEC 0 	"Transcend"
-.idx1D: ABYTEC 0 	"ADATA"
-.idx1F: ABYTEC 0 	"SiliconPower"
-.idx27: ABYTEC 0 	"Phison"
-.idx28: ABYTEC 0 	"Lexar"
-.idx31: ABYTEC 0 	"Silicon Power"
-.idx41: ABYTEC 0 	"Kingston"
-.idx73: ABYTEC 0 	"SilverHT"
-.idx74: ABYTEC 0 	"Transcend"
-.idx76: ABYTEC 0 	"Patriot"
-.idx82: ABYTEC 0 	"Sony"
-.idx89: ABYTEC 0 	"L.Data"
-.idx9C: ABYTEC 0 	"Angelbird"
+.idUkn:	DEFB 	"Unknow","n" OR #80
+.idx01:	DEFB 	"Panasoni","c" OR #80
+.idx02:	DEFB 	"Toshib","a" OR #80
+.idx03: DEFB 	"SanDis","k" OR #80
+.idx04: DEFB 	"SMI-","S" OR #80
+.idx06: DEFB 	"Renesa","s" OR #80
+.idx11: DEFB 	"Dane-Ele","c" OR #80
+.idx13: DEFB 	"KingMa","x" OR #80
+.idx18: DEFB 	"Infineo","n" OR #80
+.idx1A: DEFB 	"PQ","I" OR #80
+.idx1B: DEFB 	"Samsun","g" OR #80
+.idx1C: DEFB 	"Transcen","d" OR #80
+.idx1D: DEFB 	"ADAT","A" OR #80
+.idx1F: DEFB 	"SiliconPowe","r" OR #80
+.idx27: DEFB 	"Phiso","n" OR #80
+.idx28: DEFB 	"Lexa","r" OR #80
+.idx31: DEFB 	"Silicon Powe","r" OR #80
+.idx41: DEFB 	"Kingsto","n" OR #80
+.idx73: DEFB 	"SilverH","T" OR #80
+.idx74: DEFB 	"Transcen","d" OR #80
+.idx76: DEFB 	"Patrio","t" OR #80
+.idx82: DEFB 	"Son","y" OR #80
+.idx89: DEFB 	"L.Dat","a" OR #80
+.idx9C: DEFB 	"Angelbir","d" OR #80
 .end:
-
 
 
 ; ------------------------------------------------
@@ -2922,7 +2939,7 @@ MYSETSCR:
 	jp	INITXT			; set screen0
 
 .notMSX1:
-	ld	c,$23			; Block-2, R#3
+	ld	c,#23			; Block-2, R#3
 	ld 	ix,REDCLK
 	call	EXTROM
 	and	1
@@ -2964,7 +2981,7 @@ INICHKSTOP:
 	call	printString
 .wait1:	ld	a,7
 	call	SNSMAT
-	and	$10			; Is STOP still pressed?
+	and	#10			; Is STOP still pressed?
 	jr	z,.wait1		; Wait for STOP to be released
 	xor	a
 	ld	(INTFLG),a		; Clear STOP flag
@@ -3012,7 +3029,8 @@ STR_SANITIZE:
 ; Modifies:  A, C
 ; ------------------------------------------------
 	ld	c,0			; Flag to test if the string only has spaces
-	push	bc,hl
+	push	bc
+	push	hl
 .loop1:
 	ld	a,(hl)
 	cp	32
@@ -3073,7 +3091,9 @@ R800DATHLP:
 ; ------------------------------------------------
 LDI512:	; Z80 optimized 512 byte transfer
 	exx
-	.512	ldi
+  REPT 512
+	ldi
+  ENDM
 	ret
 
 ; ------------------------------------------------
@@ -3136,7 +3156,12 @@ CLRCTRLSTOP:
 PRTCHAR:
 	ex	af,af'
 	exx
-	push	ix,iy,af,bc,de,hl
+	push	ix
+	push	iy
+	push	af
+	push	bc
+	push	de
+	push	hl
 	exx
 	ex	af,af'
 	ld	ix,CHPUT
@@ -3144,7 +3169,12 @@ PRTCHAR:
 	call	CALSLT
 	ex	af,af'
 	exx
-	pop	hl,de,bc,af,iy,ix
+	pop	hl
+	pop	de
+	pop	bc
+	pop	af
+	pop	iy
+	pop	ix
 	exx
 	ex	af,af'
 	ret
@@ -3168,7 +3198,9 @@ PRTDASH:
 	ret
 
 PRTHEX:
-	push	af,bc,hl
+	push	af
+	push	bc
+	push	hl
 	ld	hl,TEMP3
 	call	HexToAscii
 	ld	a,'#'
@@ -3177,16 +3209,23 @@ PRTHEX:
 	call	PRTCHAR
 	ld	a,(TEMP3+1)
 	call	PRTCHAR
-	pop	hl,bc,af
+	pop	hl
+	pop	bc
+	pop	af
 	ret
 
 
 PRTSTRCALL:	; Prints an inline ASCIIZ string
 	ex	(sp),hl		; hl=Pointer to inline string
-	push	af,ix,iy
+	push	af
+	push	ix
+	push	iy
 	ex	af,af'
 	exx
-	push	af,bc,de,hl
+	push	af
+	push	bc
+	push	de
+	push	hl
 	exx
 	ex	af,af'
 	ld	ix,CHPUT
@@ -3201,10 +3240,15 @@ PRTSTRCALL:	; Prints an inline ASCIIZ string
 
 .end:	ex	af,af'
 	exx
-	pop	hl,de,bc,af
+	pop	hl
+	pop	de
+	pop	bc
+	pop	af
 	exx
 	ex	af,af'
-	pop	iy,ix,af
+	pop	iy
+	pop	ix
+	pop	af
 	ex	(sp),hl
 	ret
  ENDIF
@@ -3219,47 +3263,47 @@ strTitle:
 	BYTE2STR VER_SEC
 	db	'.'
 	BYTE2STR VER_REV
-	db  	13,10|$80
+	db  	13,10 OR #80
 
 ;		 |-------------39 chars----------------|
 strBootpaused:
-	db  	"Paused. Press <i> for the copyright info",13,10|$80
+	db  	"Paused. Press <i> for the copyright info",13,10 OR #80
 
 strCopyright:
 	db	"(c) 2014 Fabio Belavenuto",13,10
 	db	"(c) 2017 FRS",13,10
 	db	"Licenced under CERN OHL v1.1",13,10
 	db	"http://ohwr.org/cernohl",13,10
-;	db	"PCB designed by Luciano Sturaro",13,10|$80
+;	db	"PCB designed by Luciano Sturaro",13,10 OR #80
 		; will use the CR+LF+EOS bellow 
 strCrLf:
-	db	13,10|$80
+	db	13,10 OR #80
 strCartao:
-	ABYTEC 0	"- Card "
+	db	"- Card", " " OR #80
 strVazio:
-	db	"Empty",13,10|$80
+	db	"Empty",13,10 OR #80
 strNaoDetectado:
-	db	"Failed!",13,10|$80
+	db	"Failed!",13,10 OR #80
 ;			 |-------------39 chars----------------|
 strMr_mp_desativada:
-	db	"- Slot expander & Mem Mapper disabled",13,10|$80
+	db	"- Slot expander & Mem Mapper disabled",13,10 OR #80
  IFDEF HASMEGARAM
 strMapper:
-	db	"- Slot expander & Mem Mapper enabled",13,10|$80
+	db	"- Slot expander & Mem Mapper enabled",13,10 OR #80
 strMegaram:
-	db	"- Slot expander & MegaRAM enabled",13,10|$80
+	db	"- Slot expander & MegaRAM enabled",13,10 OR #80
  ELSE
 strDrvMain:
-	db	"- Main driver selected",13,10|$80
+	db	"- Main driver selected",13,10 OR #80
 strDrvDev:
-	db	"- Development driver selected",13,10|$80
+	db	"- Development driver selected",13,10 OR #80
  ENDIF
 strDskEmu:
-	db	"- Floppy disk emulation enabled",13,10|$80
+	db	"- Floppy disk emulation enabled",13,10 OR #80
 strSDV1:
-	ABYTEC 0 	"SDV1, ("
+	db 	"SDV1, ","(" OR #80
 strSDV2:
-	ABYTEC 0 	"SDV2, ("
+	db 	"SDV2, ","(" OR #80
 
 nullTxt:
 	db	"<null>"
@@ -3273,7 +3317,7 @@ nullTxt:
 
  IFDEF DSKEMU
 
- MODULE FLOPPYEMU
+; MODULE FLOPPYEMU
 
 GETSECT:
 	ld	a,(IX+WRKAREA.DSKEMU.DSKDEV)
@@ -3299,7 +3343,7 @@ GETSECT:
 	rrca
 	rrca
 	rrca
-	and	$1F			; Crop the Disk number
+	and	#1F			; Crop the Disk number
 	ld	de,1440			; Number of sectors on a 720KB disk
 	call	Mult12			; hl = sector base offset
 	ld	e,(iy+0)		; de = original requested sector
@@ -3321,18 +3365,18 @@ GETSECT:
 	ld	a,2
 	di
 	out	(c),a
-	ld	a,$80+15		; Status-register selector
+	ld	a,#80+15		; Status-register selector
 	out	(c),a
 ;	ld	c,(IX+WRKAREA.DSKEMU.VDPDR)
 .waitVDP:
 	in	a,(c)
-	and	$81
+	and	#81
 	dec	a
 	jr	z,.waitVDP
 ;	ld	c,(IX+WRKAREA.DSKEMU.VDPDW)
 	ld	a,(RG15SA)
 	out	(c),a
-	ld	a,$80+15		; Status-register selector
+	ld	a,#80+15		; Status-register selector
 	ei
 	out	(c),a
 	ld	bc,0			; Will always be 0 for up to 20 disks
@@ -3379,21 +3423,21 @@ GETSECT:
 	ld	c,b			; c=KBD_row6
  ELSE
 	di
-	in	a,($AA)		; Get the current AAh port state
+	in	a,(#AA)		; Get the current AAh port state
 	and	#F0		; Clear the keyboard row
 	ld	b,a		; b=KeyClick,CapsLED,CasOut,CasMotor,0000
 	or	6		; Select row-6
-	out	($AA),a
-	in	a,($A9)
+	out	(#AA),a
+	in	a,(#A9)
 	ld	c,a		; c=KBD_row6
 	ld	a,b		; Select row-0
-	out	($AA),a
-	in	a,($A9)
+	out	(#AA),a
+	in	a,(#A9)
 	ld	e,a		; e=KBD_row0
 	ld	a,b
 	or	1
-	out	($AA),a
-	in	a,($A9)
+	out	(#AA),a
+	in	a,(#A9)
 	ld	d,a		; d=KBD_row1
 	ei
  ENDIF
@@ -3519,15 +3563,15 @@ CHKBOOTSECT:	; Check the cards for an MSX floppy boot sector
 	ret	nz			; Yes, quit with NZ (no floppy image found)
 
 	; First we check the boot signature 
-	ld	a,(WRKTEMP.BUFFER+$000)		; Get this boot sector signature 
-	cp	$E9			; Starts with E9h?
+	ld	a,(WRKTEMP.BUFFER+#000)		; Get this boot sector signature 
+	cp	#E9			; Starts with E9h?
 	ret	z			; Assume that this is a custom disk image
-	cp	$EB			; Starts with EBh?
+	cp	#EB			; Starts with EBh?
 	ret	nz			; This is not a bootable disk
 
 	; FAT16 signature?
 	ld	hl,.FAT16sig
-	ld	de,WRKTEMP.BUFFER+$036	; FAT16 signature position 
+	ld	de,WRKTEMP.BUFFER+#036	; FAT16 signature position 
 	ld	bc,#0500		; 5 bytes long
 .loop1:	ld	a,(de)
 	cpi
@@ -3539,7 +3583,7 @@ CHKBOOTSECT:	; Check the cards for an MSX floppy boot sector
 .chkFAT32:
 	; FAT32 signature?
 	ld	hl,.FAT32sig
-	ld	de,WRKTEMP.BUFFER+$052	; FAT32 signature position 
+	ld	de,WRKTEMP.BUFFER+#052	; FAT32 signature position 
 	ld	bc,#0500		; 5 bytes long
 .loop2:	ld	a,(de)
 	cpi
@@ -3550,35 +3594,35 @@ CHKBOOTSECT:	; Check the cards for an MSX floppy boot sector
 
 .chkPCbootsig:
 	; Is there a PC boot signature at 0x1FE?
-	ld	hl,(WRKTEMP.BUFFER+$01FE)	; Get this boot sector signature 
-	ld	de,0xAA55		; PC boot signature
+	ld	hl,(WRKTEMP.BUFFER+#01FE)	; Get this boot sector signature 
+	ld	de, #AA55		; PC boot signature
 	or	a
 	sbc	hl,de			; Is there a PC boot signature here?
 	jr	z,.notDsk		; Yes, then it's not an MSX floppy
 
 	; Then we check for a custom boot sector
-	ld	a,(WRKTEMP.BUFFER+$002)		; Get this boot sector signature 
-	cp	$90			; Is the offset +2 = FEh?
+	ld	a,(WRKTEMP.BUFFER+#002)		; Get this boot sector signature 
+	cp	#90			; Is the offset +2 = FEh?
 	jr	nz,.isDsk		; No, then assume this is a custom DiskBIOS1 boot
 
 	; Are there non-ASCII chars in the OEM name field?
-;	ld	hl,WRKTEMP.BUFFER+$003	; OEM field position 
+;	ld	hl,WRKTEMP.BUFFER+#003	; OEM field position 
 	;***TODO
 
 	; Then we check for a standard boot sector structure 
-	ld	a,(WRKTEMP.BUFFER+$01E)	; Get DiskBIOS1 init instruction
+	ld	a,(WRKTEMP.BUFFER+#01E)	; Get DiskBIOS1 init instruction
 	ld	hl,.MSXdsk1bootsi
 	ld	bc,.MSXdsk1bootse-.MSXdsk1bootsi
 	cpir				; Any known diskBIOS1 init instruction?
 	ret	z			; Yes, return
 
-	ld	a,(WRKTEMP.BUFFER+$015)	; Get the media descriptor
+	ld	a,(WRKTEMP.BUFFER+#015)	; Get the media descriptor
 	ld	hl,.MSXmediadesc
 	ld	bc,4
 	cpir				; Check if is one of the MSX floppy descriptors
 	ret	nz			; No, quit with NZ
 
-	ld	de,(WRKTEMP.BUFFER+$013)	; Get the number of sectors
+	ld	de,(WRKTEMP.BUFFER+#013)	; Get the number of sectors
 	ld	a,e
 	or	d			; 0 sectors?
 	jr	z,.notDsk		; Then it's not a dsk image, quit
@@ -3601,32 +3645,24 @@ CHKBOOTSECT:	; Check the cards for an MSX floppy boot sector
 	ret	; Quit with NZ
 
 
-.MSXmediadesc:	db	$F9,$F8,$FB,$FA		; BPB: Media descriptors used by the MSX
+.MSXmediadesc:	db	#F9,#F8,#FB,#FA		; BPB: Media descriptors used by the MSX
 .MSXdsk1bootsi:	; Known instructions used at offset 01Eh to boot diskBIOS1 disks that aren't used for mass storage
-		db	$D0,$F3,$C3,$38,$DC,$DA,$21,$11
+		db	#D0,#F3,#C3,#38,#DC,#DA,#21,#11
 .MSXdsk1bootse:	; End of the known instructions
 .FAT16sig:	db	"FAT16   "
 .FAT32sig:	db	"FAT32   "
 
-
-
- ENDMODULE
+; ENDMOD
 
 
  ENDIF ; IFDEF DSKEMU
-
-
-
-
-
-
-
 
 ;=======================
 ; Variables
 ;=======================
 	.phase	#C000
-WRKTEMP		WTMPDATA
+WRKTEMP.BUFFER:		ds 512 		; Buffer for the IDENTIFY info
+WRKTEMP.SECTNUM:	ds 4		; Pointer to the text "Master:" or "Slave:"
 	.dephase
 
 
@@ -3636,6 +3672,7 @@ WRKTEMP		WTMPDATA
 
 DRV_END:
 
-;	ds	3ED0h-(DRV_END-DRV_START), $FF
-	ds	$7B00-$, #FF
+;	ds	3ED0h-(DRV_END-DRV_START), #FF
+	ds	#7B00 - $, #FF
 
+end
