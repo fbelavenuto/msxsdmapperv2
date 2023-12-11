@@ -1,0 +1,4 @@
+vhdl work "src/spi.vhd"
+vhdl work "src/mapper.vhd"
+vhdl work "src/exp_slot.vhd"
+vhdl work "src/sdmapper.vhd"
