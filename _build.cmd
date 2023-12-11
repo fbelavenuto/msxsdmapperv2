@@ -31,6 +31,10 @@ echo Building CPLD bitstream Version %HW_VERSION%
 docker run --rm -it -v %cd%/CPLD:/workdir fbelavenuto/xilinxise make VERSION=%HW_VERSION%
 IF ERRORLEVEL 1 GOTO error
 
+echo Create ZIP file
+"C:\Program Files\7-Zip\7z.exe" a -y SDMapper_%VER_MAIN%.%VER_SEC%.%VER_REV%_Nextor_%NXT_VERSION%.zip .\CPLD\sdmapper_%HW_VERSION%.jed .\driver\SDXC%VER_MAIN%%VER_SEC%%VER_REV%.ROM .\SW\Updater\FBL-UPD.COM SD
+IF ERRORLEVEL 1 GOTO error
+
 goto ok
 
 :error

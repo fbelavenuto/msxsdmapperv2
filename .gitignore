@@ -5,6 +5,7 @@
 *.lk
 *.map
 *.noi
+*.zip
 /CPLD/*.xwbt
 /CPLD/*.jed
 /CPLD/*.bld

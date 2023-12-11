@@ -27,3 +27,6 @@ docker run --rm -it -v $PWD/SW:/src fbelavenuto/8bitcompilers make -C Updater
 
 echo Building CPLD bitstream Version ${HW_VERSION}
 docker run --rm -it -v $PWD/CPLD:/workdir fbelavenuto/xilinxise make VERSION=${HW_VERSION}
+
+echo Create ZIP file
+7z a -y SDMapper_${VER_MAIN}.${VER_SEC}.${VER_REV}_Nextor_${NXT_VERSION}.zip .\CPLD\sdmapper_${HW_VERSION}.jed .\driver\SDXC${VER_MAIN}${VER_SEC}${VER_REV}.ROM .\SW\Updater\FBL-UPD.COM SD
