@@ -6,7 +6,7 @@
 
 This documentation describes Open Hardware and is licensed under the CERN OHL v. 1.1.
 
-You may redistribute and modify this documentation under the terms of the CERN OHL v.1.1. (http://ohwr.org/cernohl). This documentation is distributed WITHOUT ANY EXPRESS OR IMPLIED WARRANTY, INCLUDING OF MERCHANTABILITY, SATISFACTORY QUALITY AND FITNESS FOR A PARTICULAR PURPOSE.
+You may redistribute and modify this documentation under the terms of the [CERN OHL v.1.1](http://ohwr.org/cernohl). This documentation is distributed WITHOUT ANY EXPRESS OR IMPLIED WARRANTY, INCLUDING OF MERCHANTABILITY, SATISFACTORY QUALITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 Please see the CERN OHL v.1.1 for applicable conditions
 
@@ -14,7 +14,7 @@ Please see the CERN OHL v.1.1 for applicable conditions
 
 This project implements a cartridge-shaped interface to add a mass storage device using up to two SD (Secure Digital) and a 512K Mapper for MSX line computers.
 
-Nextor [1] was used as operating system, being developed only the driver to have access to the two SD cards. Nextor is an open project.
+[Nextor](http://www.konamiman.com/msx/msx-e.html#nextor) was used as operating system, being developed only the driver to have access to the two SD cards. Nextor is an open project.
 
 Nextor is an evolution of MSX-DOS 2 natively supporting FAT16 partitions up to 4GB, and can have 4 partitions per SD card. 128KB of Mapper is required on the minimum to use Nextor with access to sub-directories, less than 128K mapper only allows the use of the MSXDOS1 kernel, limiting partitions with FAT12 and maximum 16MB per partition.
 
@@ -22,7 +22,7 @@ One of the switches enables or disables the Mapper in conjunction with a slot ex
 
 A utility called "FBL-UPD.COM" was created to be able to update the flash by MSX itself.
 
-To compile the FBL-UPD.COM driver and utility use the cross-compiler SJASMPLUS [2] and to compile the CPLD code use Xilinx ISE Webpack [3].
+To compile the FBL-UPD.COM driver and utility use the [Konaniman's Nestor80](https://github.com/Konamiman/Nestor80) and to compile the CPLD code use [Xilinx ISE Webpack](https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/vivado-design-tools/archive-ise.html).
 
 Technical details:
  - The CPLD code implements all the necessary logic, implementing an expander of standard slots, one SPI mode 0 port, standard ASCII16 MegaROM control used by Nextor and the 512K Mapper control.
@@ -34,14 +34,6 @@ Technical details:
 
 Thanks to FRS for rewriting the driver, to Luciano Sturaro for board routing and the MSXBR-L community for their support and encouragement.
 
-## References
-
-[1] http://www.konamiman.com/msx/msx-e.html#nextor
-
-[2] http://sourceforge.net/projects/sjasmplus/
-
-[3] http://www.xilinx.com/products/design-tools/ise-design-suite/ise-webpack.htm
-
 # Quickstart guide
 
 After assembling the device, or buying a ready-made one, get an SD card, put it in the interface and start MSX.
@@ -50,12 +42,13 @@ When dropping into BASIC, type `CALL FDISK` to start formatting the SD card. The
 
 After partitioning and formatting, shut down MSX, remove the SD card and put it on your PC, copy the contents of the ./SD folder into the first partition of the SD card and put it back in MSX.
 
+For more information on how to use Nextor, visit [User Manual](https://github.com/Konamiman/Nextor/blob/v2.1/docs/Nextor%202.1%20User%20Manual.md)
 
 # Readme in portuguese
 
 Este projeto implementa uma interface em forma de cartucho para adicionar um dispositivo de armazenamento em massa utilizando até dois cartões SD (Secure Digital) e uma Mapper de 512K para computadores da linha MSX.
 
-Foi utilizado como sistema operacional o Nextor [1] sendo desenvolvido somente o driver para se ter acesso aos dois cartões SD. O Nextor é um projeto aberto.
+Foi utilizado como sistema operacional o [Nextor](http://www.konamiman.com/msx/msx-e.html#nextor) sendo desenvolvido somente o driver para se ter acesso aos dois cartões SD. O Nextor é um projeto aberto.
 
 O Nextor é uma evolução do MSX-DOS 2 tendo nativamente suporte a partições FAT16 de até 4GB, podendo ter 4 partições por cartão SD. É necessário 128KB de Mapper no mínimo para utilizar o Nextor com acesso à sub-diretórios, menos que 128K de mapper permite somente o uso do kernel do MSXDOS1 limitando em partições com FAT12 e máximo de 16MB por partição.
 
@@ -63,7 +56,7 @@ Uma das chaves habilita ou não a Mapper em conjunto com um expansor de slot. A 
 
 Foi criado um utilitário chamado "FBL-UPD.COM" para poder atualizar a flash pelo próprio MSX.
 
-Para compilar o driver e o utilitário FBL-UPD.COM utilize o cross-compiler SJASMPLUS [2] e para compilar o código do CPLD utilize o Xilinx ISE Webpack [3].
+Para compilar o driver e o utilitário FBL-UPD.COM utilize o [Nestor80 do Konaniman](https://github.com/Konamiman/Nestor80) e para compilar o código do CPLD utilize o [Xilinx ISE Webpack](https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/vivado-design-tools/archive-ise.html).
 
 # Agradecimentos
 
@@ -84,12 +77,4 @@ Ao cair no BASIC, digite `CALL FDISK` para iniciar a formatação do cartão SD.
 
 Após o particionamento e formatação, desligue o MSX, retire o cartão SD e coloque no seu PC, copie o conteúdo da pasta ./SD para dentro da primeira partição do cartão SD e recoloque no MSX.
 
-# Referências:
-
-[1] http://www.konamiman.com/msx/msx-e.html#nextor
-
-[2] http://sourceforge.net/projects/sjasmplus/
-
-[3] http://www.xilinx.com/products/design-tools/ise-design-suite/ise-webpack.htm
-
-[4] https://github.com/Konamiman/Nextor/blob/v2.1/docs/Nextor%202.1%20User%20Manual.md
+Maiores informações de como usar o Nextor acesse o [Manual do usuário](https://github.com/Konamiman/Nextor/blob/v2.1/docs/Nextor%202.1%20User%20Manual.md)
