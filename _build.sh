@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
 set -e
 
-export VER_MAIN=1
-export VER_SEC=1
-export VER_REV=0
+VER_MAIN=1
+VER_SEC=1
+VER_REV=0
 
 echo "VER_MAIN	equ	$VER_MAIN" > $PWD/driver/VERSION.INC
 echo "VER_SEC	equ	$VER_SEC" >> $PWD/driver/VERSION.INC
