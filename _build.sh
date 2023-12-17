@@ -20,7 +20,7 @@ echo Building Driver Version ${VER_MAIN}.${VER_SEC}.${VER_REV}
 docker run --rm -it -v $PWD/driver:/src fbelavenuto/8bitcompilers N80 DRIVER.ASM DRIVER.BIN --listing-file DRIVER.LST
 
 echo Building ROM with Nextor ${NXT_VERSION}
-docker run --rm -it -v $PWD:/src fbelavenuto/8bitcompilers mknexrom Nextor/Nextor-${NXT_VERSION}.base.dat driver/SDXC${VER_MAIN}${VER_SEC}${VER_REV}.ROM /d:driver/driver.bin /m:Nextor/Mapper.ASCII16.bin
+docker run --rm -it -v $PWD:/src fbelavenuto/8bitcompilers mknexrom Nextor/Nextor-${NXT_VERSION}.base.dat driver/SDXC${VER_MAIN}${VER_SEC}${VER_REV}.ROM /d:driver/DRIVER.BIN /m:Nextor/Mapper.ASCII16.bin
 
 echo Building Updater
 docker run --rm -it -v $PWD/SW:/src fbelavenuto/8bitcompilers make -C Updater
