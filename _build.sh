@@ -10,7 +10,7 @@ echo "VER_SEC	equ	$VER_SEC" >> $PWD/driver/VERSION.INC
 echo "VER_REV	equ	$VER_REV" >> $PWD/driver/VERSION.INC
 
 NXT_VERSION=`<Nextor/VERSION`
-HW_VERSION=`<CPLD\VERSION`
+HW_VERSION=`<CPLD/VERSION`
 
 echo Updating docker image
 docker pull fbelavenuto/8bitcompilers
@@ -29,4 +29,4 @@ echo Building CPLD bitstream Version ${HW_VERSION}
 docker run --rm -it -v $PWD/CPLD:/workdir fbelavenuto/xilinxise make VERSION=${HW_VERSION}
 
 echo Create ZIP file
-7z a -y SDMapper_${VER_MAIN}.${VER_SEC}.${VER_REV}_Nextor_${NXT_VERSION}.zip .\CPLD\sdmapper_${HW_VERSION}.jed .\driver\SDXC${VER_MAIN}${VER_SEC}${VER_REV}.ROM .\SW\Updater\FBL-UPD.COM SD
+7z a -y SDMapper_${VER_MAIN}.${VER_SEC}.${VER_REV}_Nextor_${NXT_VERSION}.zip ./CPLD/sdmapper_${HW_VERSION}.jed ./driver/SDXC${VER_MAIN}${VER_SEC}${VER_REV}.ROM ./SW/Updater/FBL-UPD.COM SD
