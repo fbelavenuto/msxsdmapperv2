@@ -214,6 +214,7 @@ showUsage:
 	}
 
 	c = mpInit();
+
 	if (c != 0) {
 		puts(errorNoExtBios);
 		numMprPages = numMapperPages();
