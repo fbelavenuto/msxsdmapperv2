@@ -9,8 +9,8 @@ echo "VER_MAIN	equ	$VER_MAIN" > $PWD/driver/VERSION.INC
 echo "VER_SEC	equ	$VER_SEC" >> $PWD/driver/VERSION.INC
 echo "VER_REV	equ	$VER_REV" >> $PWD/driver/VERSION.INC
 
-NXT_VERSION=`<Nextor/VERSION`
-HW_VERSION=`<CPLD/VERSION`
+NXT_VERSION=$(cat Nextor/VERSION)
+HW_VERSION=$(cat CPLD/VERSION)
 
 echo Updating docker image
 docker pull fbelavenuto/8bitcompilers
