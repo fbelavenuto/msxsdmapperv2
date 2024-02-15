@@ -44,6 +44,10 @@ After partitioning and formatting, shut down MSX, remove the SD card and put it 
 
 For more information on how to use Nextor, visit [User Manual](https://github.com/Konamiman/Nextor/blob/v2.1/docs/Nextor%202.1%20User%20Manual.md)
 
+# 3D case
+
+I found [this design](https://www.printables.com/en/model/496236-msx-cartridge-for-fblabs-sd-mapper-v2) made by community.
+
 # Readme in portuguese
 
 Este projeto implementa uma interface em forma de cartucho para adicionar um dispositivo de armazenamento em massa utilizando até dois cartões SD (Secure Digital) e uma Mapper de 512K para computadores da linha MSX.
@@ -78,3 +82,7 @@ Ao cair no BASIC, digite `CALL FDISK` para iniciar a formatação do cartão SD.
 Após o particionamento e formatação, desligue o MSX, retire o cartão SD e coloque no seu PC, copie o conteúdo da pasta ./SD para dentro da primeira partição do cartão SD e recoloque no MSX.
 
 Maiores informações de como usar o Nextor acesse o [Manual do usuário](https://github.com/Konamiman/Nextor/blob/v2.1/docs/Nextor%202.1%20User%20Manual.md)
+
+# Case 3D
+
+Eu achei [este desenho](https://www.printables.com/en/model/496236-msx-cartridge-for-fblabs-sd-mapper-v2) feito pela comunidade.
