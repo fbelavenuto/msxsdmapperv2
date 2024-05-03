@@ -51,3 +51,5 @@
 /Driver/*.ROM
 /driver/DRIVER.BIN
 /SW/Updater/FBL-UPD.COM
+/Hardware/Eagle/*.s#*
+/Hardware/Eagle/*.b#*
